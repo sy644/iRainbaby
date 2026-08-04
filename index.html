@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>板块雷达 · Sector Radar</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">📡</span>
+      <h1>板块雷达 <small>Sector Radar</small></h1>
+    </div>
+    <div class="meta">
+      <span id="last-update" class="meta-item">加载中…</span>
+      <button id="refresh-btn" class="btn-primary" title="刷新所有数据">
+        <span class="icon">↻</span> 刷新
+      </button>
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab active" data-tab="overview">📊 概览</button>
+    <button class="tab" data-tab="heatmap">🔥 板块热力图</button>
+    <button class="tab" data-tab="drawdown">📉 回撤排行</button>
+    <button class="tab" data-tab="flow">💰 资金流向</button>
+    <button class="tab" data-tab="mine">⭐ 我的板块</button>
+  </nav>
+
+  <main>
+    <!-- ============ 概览 ============ -->
+    <section class="tab-panel active" id="panel-overview">
+      <div class="summary" id="summary">
+        <div class="stat-card">
+          <div class="label">全市场板块</div>
+          <div class="value accent" id="ov-sectors">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">今日上涨</div>
+          <div class="value green" id="ov-up">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">今日下跌</div>
+          <div class="value red" id="ov-down">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">最强板块</div>
+          <div class="value" id="ov-top" style="font-size:18px;">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">最弱板块</div>
+          <div class="value" id="ov-bottom" style="font-size:18px;">—</div>
+        </div>
+      </div>
+
+      <div class="section-head">
+        <h2>🏆 涨跌幅 Top 10</h2>
+        <span class="hint">红涨绿跌 · 面积代表强度</span>
+      </div>
+      <div class="rank-list" id="top10-list"></div>
+
+      <div class="section-head">
+        <h2>💎 跌幅 Top 10(低位机会)</h2>
+        <span class="hint">结合基本面看是否超跌反弹</span>
+      </div>
+      <div class="rank-list" id="bottom10-list"></div>
+    </section>
+
+    <!-- ============ 热力图 ============ -->
+    <section class="tab-panel" id="panel-heatmap">
+      <div class="toolbar">
+        <div class="filter-pills">
+          <button class="pill active" data-hm="all">全部</button>
+          <button class="pill" data-hm="up">只看涨</button>
+          <button class="pill" data-hm="down">只看跌</button>
+        </div>
+        <div class="filter-pills">
+          <button class="pill active" data-size="abs">面积: 涨跌绝对值</button>
+          <button class="pill" data-size="vol">面积: 换手率</button>
+        </div>
+        <div class="legend">
+          <span class="legend-item" style="color:var(--red);">强涨</span>
+          <span class="legend-bar red"></span>
+          <span class="legend-item" style="color:var(--text-dim);">0</span>
+          <span class="legend-bar green"></span>
+          <span class="legend-item" style="color:var(--green);">强跌</span>
+        </div>
+      </div>
+      <div id="treemap" class="treemap">
+        <div class="loading">加载板块热力图中…</div>
+      </div>
+      <div class="hint-bottom">数据来源: 东方财富 push2delay · 延迟约 15 分钟</div>
+    </section>
+
+    <!-- ============ 回撤排行 ============ -->
+    <section class="tab-panel" id="panel-drawdown">
+      <div class="toolbar">
+        <div class="filter-pills" id="dd-period-pills">
+          <button class="pill active" data-period="5">5日高点</button>
+          <button class="pill" data-period="20">20日高点(月线)</button>
+          <button class="pill" data-period="60">60日高点(季线)</button>
+        </div>
+        <span class="hint">📌 回撤 = (当前 - N日高点) / N日高点 × 100%</span>
+      </div>
+      <div class="rank-list" id="dd-list">
+        <div class="loading">加载回撤排行…</div>
+      </div>
+    </section>
+
+    <!-- ============ 资金流向 ============ -->
+    <section class="tab-panel" id="panel-flow">
+      <div class="summary" id="flow-summary">
+        <div class="stat-card">
+          <div class="label">今日主力净流入</div>
+          <div class="value green" id="fl-main-in">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">今日主力净流出</div>
+          <div class="value red" id="fl-main-out">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">净流入最强板块</div>
+          <div class="value" id="fl-top" style="font-size:18px;">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">净流出最弱板块</div>
+          <div class="value" id="fl-bottom" style="font-size:18px;">—</div>
+        </div>
+      </div>
+
+      <div class="section-head">
+        <h2>💰 主力资金净流入 Top 15</h2>
+        <span class="hint">超大单 + 大单 = 主力</span>
+      </div>
+      <div class="rank-list" id="flow-in-list"></div>
+
+      <div class="section-head">
+        <h2>💸 主力资金净流出 Top 15</h2>
+        <span class="hint">从这些板块撤出要小心</span>
+      </div>
+      <div class="rank-list" id="flow-out-list"></div>
+    </section>
+
+    <!-- ============ 我的板块 ============ -->
+    <section class="tab-panel" id="panel-mine">
+      <div class="toolbar">
+        <input id="search-input" type="search" placeholder="🔍 搜索板块或个股 (如 '医药' / '恒瑞')" />
+        <div class="filter-pills">
+          <button class="pill active" data-filter="all">全部</button>
+          <button class="pill" data-filter="with-news">有新闻</button>
+          <button class="pill" data-filter="hot">热门轮动</button>
+        </div>
+      </div>
+      <div class="sectors" id="sectors-grid">
+        <div class="loading">加载板块数据中…</div>
+      </div>
+    </section>
+  </main>
+
+  <div id="news-modal" class="modal hidden">
+    <div class="modal-content">
+      <header>
+        <h2 id="modal-title">板块要闻</h2>
+        <button id="modal-close" class="close-btn">×</button>
+      </header>
+      <div id="modal-body" class="modal-body">加载中…</div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <span>数据: 东方财富 + 同花顺 | 行情延迟 15 分钟</span>
+    <span class="dot">·</span>
+    <span>仅作信息整理,不构成投资建议</span>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
